@@ -1,0 +1,31 @@
+# Node modules
+frontend/node_modules/
+backend/node_modules/
+
+# Build output
+frontend/dist/
+frontend/build/
+backend/dist/
+backend/build/
+
+# Environment files
+frontend/.env
+backend/.env
+
+# VSCode settings
+frontend/.vscode/
+backend/.vscode/
+
+# macOS system files
+frontend/.DS_Store
+backend/.DS_Store
+
+# Logs
+*.log
+
+# Ignore OS generated files
+Thumbs.db
+.DS_Store
+
+# Optional: ignore coverage and test output
+coverage/
