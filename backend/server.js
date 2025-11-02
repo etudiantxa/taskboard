@@ -18,20 +18,31 @@ const PORT = process.env.PORT || 5000;
 // 🧩 Gérer plusieurs origines CORS
 const allowedOrigins = (process.env.CORS_ORIGIN || '')
   .split(',')
-  .map(o => o.trim().replace(/\/$/, ''))
+  .map(o => o.trim().replace(/\/$/, '')) // supprime le slash final
   .filter(Boolean);
+
+app.use((req, res, next) => {
+  console.log('Incoming request origin:', req.headers.origin);
+  next();
+});
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
+    origin: (origin, callback) => {
+      // autoriser les requêtes sans origine (ex: Postman, tests serveur)
+      if (!origin) return callback(null, true);
+
+      // vérifier si l'origine est dans la liste autorisée
+      const cleanOrigin = origin.replace(/\/$/, '');
+      if (allowedOrigins.includes(cleanOrigin)) {
+        return callback(null, true);
       } else {
         console.log(`❌ Origin non autorisée: ${origin}`);
-        callback(new Error('Not allowed by CORS'));
+        return callback(new Error('Not allowed by CORS'));
       }
     },
     credentials: true,
+    optionsSuccessStatus: 200, // pour compatibilité avec certains navigateurs
   })
 );
 
@@ -40,10 +51,7 @@ app.use(cookieParser());
 
 // MongoDB
 mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGODB_URI)
   .then(() => console.log('✅ MongoDB Connected'))
   .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
@@ -64,6 +72,7 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ error: err.message });
 });
 
+// Démarrage du serveur
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log('✅ Allowed origins:', allowedOrigins);
